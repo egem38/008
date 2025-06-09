@@ -4,12 +4,14 @@
 <meta charset="UTF-8">
 <title>Kütüphane Otomasyonu</title>
 <style>
-body { font-family: Arial, sans-serif; }
-nav button { margin-right: 5px; }
+body { font-family: Arial, sans-serif; margin:20px; }
+nav button { margin-right: 5px; padding:8px 12px; }
 section { display: none; margin-top: 20px; }
 section.active { display: block; }
-table { border-collapse: collapse; width: 100%; }
-table, th, td { border: 1px solid #ccc; padding: 4px; }
+table { border-collapse: collapse; width: 100%; margin-top:10px; }
+th, td { border: 1px solid #ccc; padding: 6px; text-align:left; }
+form div { margin-bottom:8px; }
+form label { display:inline-block; width:120px; }
 </style>
 </head>
 <body>
@@ -22,15 +24,29 @@ table, th, td { border: 1px solid #ccc; padding: 4px; }
 
 <section id="books">
   <h2>Kitaplar</h2>
-  <button onclick="fetchBook()">ISBN'den Çek</button>
-  <input id="isbnSearch" placeholder="ISBN"/>
-  <button onclick="addBook()">Ekle</button>
-  <input type="file" id="bookFile" accept=".xlsx"/>
-  <button onclick="importBooks()">Excel İçe Aktar</button>
+  <form id="bookForm" onsubmit="saveBook(event)">
+    <input type="hidden" id="bookId">
+    <div><label>ISBN</label><input id="bookIsbn" required></div>
+    <div><label>Başlık</label><input id="bookTitle" required></div>
+    <div><label>Sayfa</label><input id="bookPages" type="number"></div>
+    <div><label>Yıl</label><input id="bookYear" type="number"></div>
+    <div><label>Kategori</label><input id="bookCategory"></div>
+    <div><label>Raf</label><input id="bookShelf"></div>
+    <div><label>Dolap</label><input id="bookCabinet"></div>
+    <div><label>Stok</label><input id="bookStock" type="number"></div>
+    <button type="submit">Kaydet</button>
+    <button type="button" onclick="clearBookForm()">Temizle</button>
+  </form>
+  <div>
+    <input id="isbnSearch" placeholder="ISBN">
+    <button onclick="fetchBook()">ISBN'den Çek</button>
+    <input type="file" id="bookFile" accept=".xlsx">
+    <button onclick="importBooks()">Excel İçe Aktar</button>
+  </div>
   <table id="bookTable">
     <thead>
       <tr>
-        <th>ISBN</th><th>Başlık</th><th>Sayfa</th><th>Yıl</th><th>Kategori</th><th>Raf</th><th>Dolap</th><th>Mevcut</th><th>Sil</th>
+        <th>ISBN</th><th>Başlık</th><th>Sayfa</th><th>Yıl</th><th>Kategori</th><th>Raf</th><th>Dolap</th><th>Mevcut</th><th>Düzenle</th><th>Sil</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -39,13 +55,25 @@ table, th, td { border: 1px solid #ccc; padding: 4px; }
 
 <section id="members">
   <h2>Üyeler</h2>
-  <button onclick="addMember()">Ekle</button>
-  <input type="file" id="memberFile" accept=".xlsx"/>
-  <button onclick="importMembers()">Excel İçe Aktar</button>
+  <form id="memberForm" onsubmit="saveMember(event)">
+    <input type="hidden" id="memberId">
+    <div><label>Ad</label><input id="memName" required></div>
+    <div><label>Soyad</label><input id="memSurname" required></div>
+    <div><label>Okul No</label><input id="memNo"></div>
+    <div><label>Email</label><input id="memEmail" type="email"></div>
+    <div><label>Telefon</label><input id="memPhone"></div>
+    <div><label>Rol</label><input id="memRole" placeholder="Öğrenci/Öğretmen"></div>
+    <button type="submit">Kaydet</button>
+    <button type="button" onclick="clearMemberForm()">Temizle</button>
+  </form>
+  <div>
+    <input type="file" id="memberFile" accept=".xlsx">
+    <button onclick="importMembers()">Excel İçe Aktar</button>
+  </div>
   <table id="memberTable">
     <thead>
       <tr>
-        <th>Ad</th><th>Soyad</th><th>Okul No</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Sil</th>
+        <th>Ad</th><th>Soyad</th><th>Okul No</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Düzenle</th><th>Sil</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -54,13 +82,23 @@ table, th, td { border: 1px solid #ccc; padding: 4px; }
 
 <section id="transactions">
   <h2>İşlemler</h2>
-  <button onclick="addTransaction()">Ekle</button>
-  <input type="file" id="txFile" accept=".xlsx"/>
-  <button onclick="importTx()">Excel İçe Aktar</button>
+  <form id="txForm" onsubmit="saveTx(event)">
+    <input type="hidden" id="txId">
+    <div><label>Üye ID</label><input id="txMember" required></div>
+    <div><label>Kitap ID</label><input id="txBook" required></div>
+    <div><label>Veriliş Tarihi</label><input id="txIssue" type="date"></div>
+    <div><label>Teslim Tarihi</label><input id="txReturn" type="date"></div>
+    <button type="submit">Kaydet</button>
+    <button type="button" onclick="clearTxForm()">Temizle</button>
+  </form>
+  <div>
+    <input type="file" id="txFile" accept=".xlsx">
+    <button onclick="importTx()">Excel İçe Aktar</button>
+  </div>
   <table id="txTable">
     <thead>
       <tr>
-        <th>Üye</th><th>Kitap</th><th>Veriliş</th><th>İade</th><th>Alındı</th><th>Sil</th>
+        <th>Üye</th><th>Kitap</th><th>Veriliş</th><th>İade</th><th>Alındı</th><th>Düzenle</th><th>Sil</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -82,16 +120,46 @@ async function loadBooks(){
   tbody.innerHTML='';
   data.forEach(b=>{
     const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${b.isbn}</td><td>${b.title}</td><td>${b.pages||''}</td><td>${b.year||''}</td><td>${b.category||''}</td><td>${b.shelf||''}</td><td>${b.cabinet||''}</td><td>${b.stock||''}</td><td><button onclick="delBook(${b.id})">Sil</button></td>`;
+    tr.innerHTML=`<td>${b.isbn}</td><td>${b.title}</td><td>${b.pages||''}</td><td>${b.year||''}</td><td>${b.category||''}</td><td>${b.shelf||''}</td><td>${b.cabinet||''}</td><td>${b.stock||''}</td><td><button onclick="editBook(${b.id})">Düzenle</button></td><td><button onclick="delBook(${b.id})">Sil</button></td>`;
     tbody.appendChild(tr);
   });
 }
-async function addBook(){
-  const isbn = prompt('ISBN?');
-  const title = prompt('Başlık?');
-  const book = { isbn, title };
-  await fetch('/api/books',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(book)});
+function clearBookForm(){ document.getElementById('bookForm').reset(); document.getElementById('bookId').value=''; }
+async function saveBook(e){
+  e.preventDefault();
+  const id = document.getElementById('bookId').value;
+  const book = {
+    isbn:document.getElementById('bookIsbn').value,
+    title:document.getElementById('bookTitle').value,
+    pages:document.getElementById('bookPages').value,
+    year:document.getElementById('bookYear').value,
+    category:document.getElementById('bookCategory').value,
+    shelf:document.getElementById('bookShelf').value,
+    cabinet:document.getElementById('bookCabinet').value,
+    stock:document.getElementById('bookStock').value
+  };
+  if(id){
+    await fetch('/api/books/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(book)});
+  } else {
+    await fetch('/api/books',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(book)});
+  }
+  clearBookForm();
   loadBooks();
+}
+async function editBook(id){
+  const res = await fetch('/api/books');
+  const books = await res.json();
+  const b = books.find(x=>x.id===id);
+  if(!b) return;
+  document.getElementById('bookId').value=b.id;
+  document.getElementById('bookIsbn').value=b.isbn||'';
+  document.getElementById('bookTitle').value=b.title||'';
+  document.getElementById('bookPages').value=b.pages||'';
+  document.getElementById('bookYear').value=b.year||'';
+  document.getElementById('bookCategory').value=b.category||'';
+  document.getElementById('bookShelf').value=b.shelf||'';
+  document.getElementById('bookCabinet').value=b.cabinet||'';
+  document.getElementById('bookStock').value=b.stock||'';
 }
 async function delBook(id){
   await fetch('/api/books/'+id,{method:'DELETE'});
@@ -99,10 +167,16 @@ async function delBook(id){
 }
 async function fetchBook(){
   const isbn=document.getElementById('isbnSearch').value;
+  if(!isbn) return alert('ISBN girin');
   const res = await fetch('/api/fetchBook/'+isbn);
   if(res.ok){
     const info = await res.json();
-    alert(JSON.stringify(info,null,2));
+    document.getElementById('bookIsbn').value=isbn;
+    document.getElementById('bookTitle').value=info.title||'';
+    document.getElementById('bookPages').value=info.pages||'';
+    document.getElementById('bookYear').value=info.year||'';
+    document.getElementById('bookCategory').value=info.category||'';
+    alert('Bilgiler getirildi, düzenleyip kaydedin');
   } else alert('Bulunamadı');
 }
 async function loadMembers(){
@@ -112,22 +186,47 @@ async function loadMembers(){
   tbody.innerHTML='';
   data.forEach(m=>{
     const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${m.name}</td><td>${m.surname}</td><td>${m.schoolNo}</td><td>${m.email}</td><td>${m.phone}</td><td>${m.role}</td><td><button onclick="delMember(${m.id})">Sil</button></td>`;
+    tr.innerHTML=`<td>${m.name}</td><td>${m.surname}</td><td>${m.schoolNo||''}</td><td>${m.email||''}</td><td>${m.phone||''}</td><td>${m.role||''}</td><td><button onclick="editMember(${m.id})">Düzenle</button></td><td><button onclick="delMember(${m.id})">Sil</button></td>`;
     tbody.appendChild(tr);
   });
 }
-async function addMember(){
-  const name=prompt('Ad?');
-  const surname=prompt('Soyad?');
-  const member={name,surname};
-  await fetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(member)});
+function clearMemberForm(){ document.getElementById('memberForm').reset(); document.getElementById('memberId').value=''; }
+async function saveMember(e){
+  e.preventDefault();
+  const id=document.getElementById('memberId').value;
+  const member={
+    name:document.getElementById('memName').value,
+    surname:document.getElementById('memSurname').value,
+    schoolNo:document.getElementById('memNo').value,
+    email:document.getElementById('memEmail').value,
+    phone:document.getElementById('memPhone').value,
+    role:document.getElementById('memRole').value
+  };
+  if(id){
+    await fetch('/api/members/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(member)});
+  } else {
+    await fetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(member)});
+  }
+  clearMemberForm();
   loadMembers();
+}
+async function editMember(id){
+  const res = await fetch('/api/members');
+  const members = await res.json();
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  document.getElementById('memberId').value=m.id;
+  document.getElementById('memName').value=m.name||'';
+  document.getElementById('memSurname').value=m.surname||'';
+  document.getElementById('memNo').value=m.schoolNo||'';
+  document.getElementById('memEmail').value=m.email||'';
+  document.getElementById('memPhone').value=m.phone||'';
+  document.getElementById('memRole').value=m.role||'';
 }
 async function delMember(id){
   await fetch('/api/members/'+id,{method:'DELETE'});
   loadMembers();
 }
-
 async function importBooks(){
   const file=document.getElementById('bookFile').files[0];
   if(!file) return alert('Dosya seçin');
@@ -136,7 +235,6 @@ async function importBooks(){
   await fetch('/api/import/books',{method:'POST',body:form});
   loadBooks();
 }
-
 async function importMembers(){
   const file=document.getElementById('memberFile').files[0];
   if(!file) return alert('Dosya seçin');
@@ -145,7 +243,6 @@ async function importMembers(){
   await fetch('/api/import/members',{method:'POST',body:form});
   loadMembers();
 }
-
 async function importTx(){
   const file=document.getElementById('txFile').files[0];
   if(!file) return alert('Dosya seçin');
@@ -162,24 +259,43 @@ async function loadTx(){
   data.forEach(t=>{
     const tr=document.createElement('tr');
     const returned = t.returned ? 'Evet' : `<button onclick="returnTx(${t.id})">Teslim Al</button>`;
-    tr.innerHTML=`<td>${t.member}</td><td>${t.book}</td><td>${t.issueDate}</td><td>${t.returnDate}</td><td>${returned}</td><td><button onclick="delTx(${t.id})">Sil</button></td>`;
+    tr.innerHTML=`<td>${t.member}</td><td>${t.book}</td><td>${t.issueDate||''}</td><td>${t.returnDate||''}</td><td>${returned}</td><td><button onclick="editTx(${t.id})">Düzenle</button></td><td><button onclick="delTx(${t.id})">Sil</button></td>`;
     tbody.appendChild(tr);
   });
 }
-async function addTransaction(){
-  const member = prompt('Üye ID?');
-  const book = prompt('Kitap ID?');
-  const issueDate=prompt('Veriliş tarihi?');
-  const returnDate=prompt('Teslim tarihi?');
-  const tx={member,book,issueDate,returnDate};
-  await fetch('/api/transactions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tx)});
+function clearTxForm(){ document.getElementById('txForm').reset(); document.getElementById('txId').value=''; }
+async function saveTx(e){
+  e.preventDefault();
+  const id=document.getElementById('txId').value;
+  const tx={
+    member:document.getElementById('txMember').value,
+    book:document.getElementById('txBook').value,
+    issueDate:document.getElementById('txIssue').value,
+    returnDate:document.getElementById('txReturn').value
+  };
+  if(id){
+    await fetch('/api/transactions/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(tx)});
+  } else {
+    await fetch('/api/transactions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tx)});
+  }
+  clearTxForm();
   loadTx();
+}
+async function editTx(id){
+  const res=await fetch('/api/transactions');
+  const txs=await res.json();
+  const t=txs.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('txId').value=t.id;
+  document.getElementById('txMember').value=t.member||'';
+  document.getElementById('txBook').value=t.book||'';
+  document.getElementById('txIssue').value=t.issueDate||'';
+  document.getElementById('txReturn').value=t.returnDate||'';
 }
 async function delTx(id){
   await fetch('/api/transactions/'+id,{method:'DELETE'});
   loadTx();
 }
-
 async function returnTx(id){
   await fetch('/api/transactions/'+id+'/return',{method:'POST'});
   loadTx();
