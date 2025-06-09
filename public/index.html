@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Kütüphane Otomasyonu</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #e6f0ff;
+  color: #03376e;
+}
+body.dark {
+  background-color: #1e1e1e;
+  color: #ddd;
+}
+nav button {
+  margin-right: 5px;
+  padding: 8px 12px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+nav button:hover {
+  background-color: #0056b3;
+}
+body.dark nav button {
+  background-color: #444;
+}
+body.dark nav button:hover {
+  background-color: #666;
+}
+section {
+  display: none;
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+section.active {
+  display: block;
+  opacity: 1;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: left;
+}
+body.dark th, body.dark td {
+  border-color: #555;
+}
+form div { margin-bottom: 8px; }
+form label { display: inline-block; width: 120px; }
+</style>
+</head>
+<body>
+<h1>Kütüphane Otomasyonu</h1>
+<nav>
+  <button onclick="show('books')">Kitaplar</button>
+  <button onclick="show('members')">Üyeler</button>
+  <button onclick="show('transactions')">İşlemler</button>
+  <button onclick="toggleTheme()">Tema</button>
+</nav>
+
+<section id="books">
+  <h2>Kitaplar</h2>
+  <form id="bookForm" onsubmit="saveBook(event)">
+    <input type="hidden" id="bookId">
+    <div><label>ISBN</label><input id="bookIsbn" required></div>
+    <div><label>Başlık</label><input id="bookTitle" required></div>
+    <div><label>Sayfa</label><input id="bookPages" type="number"></div>
+    <div><label>Yıl</label><input id="bookYear" type="number"></div>
+    <div><label>Kategori</label><input id="bookCategory"></div>
+    <div><label>Raf</label><input id="bookShelf"></div>
+    <div><label>Dolap</label><input id="bookCabinet"></div>
+    <div><label>Stok</label><input id="bookStock" type="number"></div>
+    <button type="submit">Kaydet</button>
+    <button type="button" onclick="clearBookForm()">Temizle</button>
+  </form>
+  <div>
+    <input id="isbnSearch" placeholder="ISBN">
+    <button onclick="fetchBook()">ISBN'den Çek</button>
+    <input id="bookSearch" placeholder="Ara" oninput="loadBooks()">
+    <input type="file" id="bookFile" accept=".xlsx">
+    <button onclick="importBooks()">Excel İçe Aktar</button>
+    <span>Toplam: <span id="bookCount">0</span></span>
+  </div>
+  <table id="bookTable">
+    <thead>
+      <tr>
+        <th>ISBN</th><th>Başlık</th><th>Sayfa</th><th>Yıl</th><th>Kategori</th><th>Raf</th><th>Dolap</th><th>Mevcut</th><th>Düzenle</th><th>Listeden Kaldır</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section id="members">
+  <h2>Üyeler</h2>
+  <form id="memberForm" onsubmit="saveMember(event)">
+    <input type="hidden" id="memberId">
+    <div><label>Ad</label><input id="memName" required></div>
+    <div><label>Soyad</label><input id="memSurname" required></div>
+    <div><label>Okul No</label><input id="memNo"></div>
+    <div><label>Email</label><input id="memEmail" type="email"></div>
+    <div><label>Telefon</label><input id="memPhone"></div>
+    <div><label>Rol</label><input id="memRole" placeholder="Öğrenci/Öğretmen"></div>
+    <button type="submit">Kaydet</button>
+    <button type="button" onclick="clearMemberForm()">Temizle</button>
+  </form>
+  <div>
+    <input type="file" id="memberFile" accept=".xlsx">
+    <button onclick="importMembers()">Excel İçe Aktar</button>
+    <input id="memberSearch" placeholder="Ara" oninput="loadMembers()">
+    <span>Toplam: <span id="memberCount">0</span></span>
+  </div>
+  <table id="memberTable">
+    <thead>
+      <tr>
+        <th>Ad</th><th>Soyad</th><th>Okul No</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Düzenle</th><th>Listeden Kaldır</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section id="transactions">
+  <h2>İşlemler</h2>
+  <form id="txForm" onsubmit="saveTx(event)">
+    <input type="hidden" id="txId">
+    <div><label>Üye ID</label><input id="txMember" required></div>
+    <div><label>Kitap ID</label><input id="txBook" required></div>
+    <div><label>Veriliş Tarihi</label><input id="txIssue" type="date"></div>
+    <div><label>Teslim Tarihi</label><input id="txReturn" type="date"></div>
+    <button type="submit">Kaydet</button>
+    <button type="button" onclick="clearTxForm()">Temizle</button>
+  </form>
+  <div>
+    <input type="file" id="txFile" accept=".xlsx">
+    <button onclick="importTx()">Excel İçe Aktar</button>
+    <input id="txSearch" placeholder="Ara" oninput="loadTx()">
+    <span>Toplam: <span id="txCount">0</span></span>
+  </div>
+  <table id="txTable">
+    <thead>
+      <tr>
+        <th>Üye</th><th>Kitap</th><th>Veriliş</th><th>İade</th><th>Alındı</th><th>Düzenle</th><th>Listeden Kaldır</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<script>
+function show(id){
+  document.querySelectorAll('section').forEach(s=>{
+    if(s.id===id){
+      s.style.display='block';
+      requestAnimationFrame(()=>s.classList.add('active'));
+    } else {
+      s.classList.remove('active');
+      s.style.display='none';
+    }
+  });
+  if(id==='books') loadBooks();
+  if(id==='members') loadMembers();
+  if(id==='transactions') loadTx();
+}
+async function loadBooks(){
+  const res = await fetch('/api/books');
+  const data = await res.json();
+  const tbody = document.querySelector('#bookTable tbody');
+  tbody.innerHTML='';
+  const search=(document.getElementById('bookSearch').value||'').toLowerCase();
+  const filtered=data.filter(b=>b.title?.toLowerCase().includes(search)||b.isbn.includes(search));
+  document.getElementById('bookCount').textContent=filtered.length;
+  filtered.forEach(b=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML=`<td>${b.isbn}</td><td>${b.title}</td><td>${b.pages||''}</td><td>${b.year||''}</td><td>${b.category||''}</td><td>${b.shelf||''}</td><td>${b.cabinet||''}</td><td>${b.stock||''}</td><td><button onclick="editBook(${b.id})">Düzenle</button></td><td><button onclick="delBook(${b.id})">Listeden Kaldır</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function clearBookForm(){ document.getElementById('bookForm').reset(); document.getElementById('bookId').value=''; }
+async function saveBook(e){
+  e.preventDefault();
+  const id = document.getElementById('bookId').value;
+  const book = {
+    isbn:document.getElementById('bookIsbn').value,
+    title:document.getElementById('bookTitle').value,
+    pages:document.getElementById('bookPages').value,
+    year:document.getElementById('bookYear').value,
+    category:document.getElementById('bookCategory').value,
+    shelf:document.getElementById('bookShelf').value,
+    cabinet:document.getElementById('bookCabinet').value,
+    stock:document.getElementById('bookStock').value
+  };
+  if(id){
+    await fetch('/api/books/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(book)});
+  } else {
+    await fetch('/api/books',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(book)});
+  }
+  clearBookForm();
+  loadBooks();
+}
+async function editBook(id){
+  const res = await fetch('/api/books');
+  const books = await res.json();
+  const b = books.find(x=>x.id===id);
+  if(!b) return;
+  document.getElementById('bookId').value=b.id;
+  document.getElementById('bookIsbn').value=b.isbn||'';
+  document.getElementById('bookTitle').value=b.title||'';
+  document.getElementById('bookPages').value=b.pages||'';
+  document.getElementById('bookYear').value=b.year||'';
+  document.getElementById('bookCategory').value=b.category||'';
+  document.getElementById('bookShelf').value=b.shelf||'';
+  document.getElementById('bookCabinet').value=b.cabinet||'';
+  document.getElementById('bookStock').value=b.stock||'';
+}
+async function delBook(id){
+  await fetch('/api/books/'+id,{method:'DELETE'});
+  loadBooks();
+}
+async function fetchBook(){
+  const isbn=document.getElementById('isbnSearch').value;
+  if(!isbn) return alert('ISBN girin');
+  const res = await fetch('/api/fetchBook/'+isbn);
+  if(res.ok){
+    const info = await res.json();
+    document.getElementById('bookIsbn').value=isbn;
+    document.getElementById('bookTitle').value=info.title||'';
+    document.getElementById('bookPages').value=info.pages||'';
+    document.getElementById('bookYear').value=info.year||'';
+    document.getElementById('bookCategory').value=info.category||'';
+    alert('Bilgiler getirildi, düzenleyip kaydedin');
+  } else alert('Bulunamadı');
+}
+async function loadMembers(){
+  const res = await fetch('/api/members');
+  const data = await res.json();
+  const tbody = document.querySelector('#memberTable tbody');
+  tbody.innerHTML='';
+  const search=(document.getElementById('memberSearch').value||'').toLowerCase();
+  const filtered=data.filter(m=>m.name.toLowerCase().includes(search)||m.surname.toLowerCase().includes(search));
+  document.getElementById('memberCount').textContent=filtered.length;
+  filtered.forEach(m=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML=`<td>${m.name}</td><td>${m.surname}</td><td>${m.schoolNo||''}</td><td>${m.email||''}</td><td>${m.phone||''}</td><td>${m.role||''}</td><td><button onclick="editMember(${m.id})">Düzenle</button></td><td><button onclick="delMember(${m.id})">Listeden Kaldır</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function clearMemberForm(){ document.getElementById('memberForm').reset(); document.getElementById('memberId').value=''; }
+async function saveMember(e){
+  e.preventDefault();
+  const id=document.getElementById('memberId').value;
+  const member={
+    name:document.getElementById('memName').value,
+    surname:document.getElementById('memSurname').value,
+    schoolNo:document.getElementById('memNo').value,
+    email:document.getElementById('memEmail').value,
+    phone:document.getElementById('memPhone').value,
+    role:document.getElementById('memRole').value
+  };
+  if(id){
+    await fetch('/api/members/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(member)});
+  } else {
+    await fetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(member)});
+  }
+  clearMemberForm();
+  loadMembers();
+}
+async function editMember(id){
+  const res = await fetch('/api/members');
+  const members = await res.json();
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  document.getElementById('memberId').value=m.id;
+  document.getElementById('memName').value=m.name||'';
+  document.getElementById('memSurname').value=m.surname||'';
+  document.getElementById('memNo').value=m.schoolNo||'';
+  document.getElementById('memEmail').value=m.email||'';
+  document.getElementById('memPhone').value=m.phone||'';
+  document.getElementById('memRole').value=m.role||'';
+}
+async function delMember(id){
+  await fetch('/api/members/'+id,{method:'DELETE'});
+  loadMembers();
+}
+async function importBooks(){
+  const file=document.getElementById('bookFile').files[0];
+  if(!file) return alert('Dosya seçin');
+  const form=new FormData();
+  form.append('file', file);
+  await fetch('/api/import/books',{method:'POST',body:form});
+  loadBooks();
+}
+async function importMembers(){
+  const file=document.getElementById('memberFile').files[0];
+  if(!file) return alert('Dosya seçin');
+  const form=new FormData();
+  form.append('file', file);
+  await fetch('/api/import/members',{method:'POST',body:form});
+  loadMembers();
+}
+async function importTx(){
+  const file=document.getElementById('txFile').files[0];
+  if(!file) return alert('Dosya seçin');
+  const form=new FormData();
+  form.append('file', file);
+  await fetch('/api/import/transactions',{method:'POST',body:form});
+  loadTx();
+}
+async function loadTx(){
+  const res = await fetch('/api/transactions');
+  const data = await res.json();
+  const tbody = document.querySelector('#txTable tbody');
+  tbody.innerHTML='';
+  const search=(document.getElementById('txSearch').value||'').toLowerCase();
+  const filtered=data.filter(t=>t.member.toString().includes(search)||t.book.toString().includes(search));
+  document.getElementById('txCount').textContent=filtered.length;
+  const now=Date.now();
+  filtered.forEach(t=>{
+    const tr=document.createElement('tr');
+    const returned = t.returned ? 'Evet' : `<button onclick="returnTx(${t.id})">Teslim Al</button>`;
+    const overdue=!t.returned && t.returnDate && new Date(t.returnDate).getTime()<now;
+    tr.style.backgroundColor=overdue? '#ffcccc':'';
+    tr.innerHTML=`<td>${t.member}</td><td>${t.book}</td><td>${t.issueDate||''}</td><td>${t.returnDate||''}</td><td>${returned}</td><td><button onclick="editTx(${t.id})">Düzenle</button></td><td><button onclick="delTx(${t.id})">Listeden Kaldır</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function clearTxForm(){ document.getElementById('txForm').reset(); document.getElementById('txId').value=''; }
+async function saveTx(e){
+  e.preventDefault();
+  const id=document.getElementById('txId').value;
+  const tx={
+    member:document.getElementById('txMember').value,
+    book:document.getElementById('txBook').value,
+    issueDate:document.getElementById('txIssue').value,
+    returnDate:document.getElementById('txReturn').value
+  };
+  if(id){
+    await fetch('/api/transactions/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(tx)});
+  } else {
+    await fetch('/api/transactions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tx)});
+  }
+  clearTxForm();
+  loadTx();
+}
+async function editTx(id){
+  const res=await fetch('/api/transactions');
+  const txs=await res.json();
+  const t=txs.find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('txId').value=t.id;
+  document.getElementById('txMember').value=t.member||'';
+  document.getElementById('txBook').value=t.book||'';
+  document.getElementById('txIssue').value=t.issueDate||'';
+  document.getElementById('txReturn').value=t.returnDate||'';
+}
+async function delTx(id){
+  await fetch('/api/transactions/'+id,{method:'DELETE'});
+  loadTx();
+}
+async function returnTx(id){
+  await fetch('/api/transactions/'+id+'/return',{method:'POST'});
+  loadTx();
+}
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light');
+}
+window.addEventListener('load',()=>{
+  if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+});
+show('books');
+</script>
+</body>
+</html>
