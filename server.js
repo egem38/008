@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const xlsx = require('xlsx');
-const fetch = require('node-fetch');
+const fs = require('fs');
 const { Low } = require("lowdb");
 const { JSONFile } = require("lowdb/node");
 const path = require('path');
@@ -167,6 +167,7 @@ app.post('/api/import/books', upload.single('file'), async (req, res) => {
     db.data.books.push(r);
   });
   await db.write();
+  fs.unlink(req.file.path, ()=>{});
   res.json({ count: rows.length });
 });
 
@@ -181,6 +182,7 @@ app.post('/api/import/members', upload.single('file'), async (req, res) => {
     db.data.members.push(r);
   });
   await db.write();
+  fs.unlink(req.file.path, ()=>{});
   res.json({ count: rows.length });
 });
 
@@ -196,6 +198,7 @@ app.post('/api/import/transactions', upload.single('file'), async (req, res) => 
     db.data.transactions.push(r);
   });
   await db.write();
+  fs.unlink(req.file.path, ()=>{});
   res.json({ count: rows.length });
 });
 

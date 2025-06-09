@@ -10,6 +10,10 @@ body {
   background-color: #e6f0ff;
   color: #03376e;
 }
+body.dark {
+  background-color: #1e1e1e;
+  color: #ddd;
+}
 nav button {
   margin-right: 5px;
   padding: 8px 12px;
@@ -22,6 +26,12 @@ nav button {
 }
 nav button:hover {
   background-color: #0056b3;
+}
+body.dark nav button {
+  background-color: #444;
+}
+body.dark nav button:hover {
+  background-color: #666;
 }
 section {
   display: none;
@@ -43,6 +53,9 @@ th, td {
   padding: 6px;
   text-align: left;
 }
+body.dark th, body.dark td {
+  border-color: #555;
+}
 form div { margin-bottom: 8px; }
 form label { display: inline-block; width: 120px; }
 </style>
@@ -53,6 +66,7 @@ form label { display: inline-block; width: 120px; }
   <button onclick="show('books')">Kitaplar</button>
   <button onclick="show('members')">Üyeler</button>
   <button onclick="show('transactions')">İşlemler</button>
+  <button onclick="toggleTheme()">Tema</button>
 </nav>
 
 <section id="books">
@@ -73,8 +87,10 @@ form label { display: inline-block; width: 120px; }
   <div>
     <input id="isbnSearch" placeholder="ISBN">
     <button onclick="fetchBook()">ISBN'den Çek</button>
+    <input id="bookSearch" placeholder="Ara" oninput="loadBooks()">
     <input type="file" id="bookFile" accept=".xlsx">
     <button onclick="importBooks()">Excel İçe Aktar</button>
+    <span>Toplam: <span id="bookCount">0</span></span>
   </div>
   <table id="bookTable">
     <thead>
@@ -102,6 +118,8 @@ form label { display: inline-block; width: 120px; }
   <div>
     <input type="file" id="memberFile" accept=".xlsx">
     <button onclick="importMembers()">Excel İçe Aktar</button>
+    <input id="memberSearch" placeholder="Ara" oninput="loadMembers()">
+    <span>Toplam: <span id="memberCount">0</span></span>
   </div>
   <table id="memberTable">
     <thead>
@@ -127,6 +145,8 @@ form label { display: inline-block; width: 120px; }
   <div>
     <input type="file" id="txFile" accept=".xlsx">
     <button onclick="importTx()">Excel İçe Aktar</button>
+    <input id="txSearch" placeholder="Ara" oninput="loadTx()">
+    <span>Toplam: <span id="txCount">0</span></span>
   </div>
   <table id="txTable">
     <thead>
@@ -158,7 +178,10 @@ async function loadBooks(){
   const data = await res.json();
   const tbody = document.querySelector('#bookTable tbody');
   tbody.innerHTML='';
-  data.forEach(b=>{
+  const search=(document.getElementById('bookSearch').value||'').toLowerCase();
+  const filtered=data.filter(b=>b.title?.toLowerCase().includes(search)||b.isbn.includes(search));
+  document.getElementById('bookCount').textContent=filtered.length;
+  filtered.forEach(b=>{
     const tr = document.createElement('tr');
     tr.innerHTML=`<td>${b.isbn}</td><td>${b.title}</td><td>${b.pages||''}</td><td>${b.year||''}</td><td>${b.category||''}</td><td>${b.shelf||''}</td><td>${b.cabinet||''}</td><td>${b.stock||''}</td><td><button onclick="editBook(${b.id})">Düzenle</button></td><td><button onclick="delBook(${b.id})">Listeden Kaldır</button></td>`;
     tbody.appendChild(tr);
@@ -224,7 +247,10 @@ async function loadMembers(){
   const data = await res.json();
   const tbody = document.querySelector('#memberTable tbody');
   tbody.innerHTML='';
-  data.forEach(m=>{
+  const search=(document.getElementById('memberSearch').value||'').toLowerCase();
+  const filtered=data.filter(m=>m.name.toLowerCase().includes(search)||m.surname.toLowerCase().includes(search));
+  document.getElementById('memberCount').textContent=filtered.length;
+  filtered.forEach(m=>{
     const tr = document.createElement('tr');
     tr.innerHTML=`<td>${m.name}</td><td>${m.surname}</td><td>${m.schoolNo||''}</td><td>${m.email||''}</td><td>${m.phone||''}</td><td>${m.role||''}</td><td><button onclick="editMember(${m.id})">Düzenle</button></td><td><button onclick="delMember(${m.id})">Listeden Kaldır</button></td>`;
     tbody.appendChild(tr);
@@ -296,9 +322,15 @@ async function loadTx(){
   const data = await res.json();
   const tbody = document.querySelector('#txTable tbody');
   tbody.innerHTML='';
-  data.forEach(t=>{
+  const search=(document.getElementById('txSearch').value||'').toLowerCase();
+  const filtered=data.filter(t=>t.member.toString().includes(search)||t.book.toString().includes(search));
+  document.getElementById('txCount').textContent=filtered.length;
+  const now=Date.now();
+  filtered.forEach(t=>{
     const tr=document.createElement('tr');
     const returned = t.returned ? 'Evet' : `<button onclick="returnTx(${t.id})">Teslim Al</button>`;
+    const overdue=!t.returned && t.returnDate && new Date(t.returnDate).getTime()<now;
+    tr.style.backgroundColor=overdue? '#ffcccc':'';
     tr.innerHTML=`<td>${t.member}</td><td>${t.book}</td><td>${t.issueDate||''}</td><td>${t.returnDate||''}</td><td>${returned}</td><td><button onclick="editTx(${t.id})">Düzenle</button></td><td><button onclick="delTx(${t.id})">Listeden Kaldır</button></td>`;
     tbody.appendChild(tr);
   });
@@ -340,6 +372,13 @@ async function returnTx(id){
   await fetch('/api/transactions/'+id+'/return',{method:'POST'});
   loadTx();
 }
+function toggleTheme(){
+  document.body.classList.toggle('dark');
+  localStorage.setItem('theme', document.body.classList.contains('dark')?'dark':'light');
+}
+window.addEventListener('load',()=>{
+  if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark');
+});
 show('books');
 </script>
 </body>
