@@ -46,7 +46,7 @@ form label { display:inline-block; width:120px; }
   <table id="bookTable">
     <thead>
       <tr>
-        <th>ISBN</th><th>Başlık</th><th>Sayfa</th><th>Yıl</th><th>Kategori</th><th>Raf</th><th>Dolap</th><th>Mevcut</th><th>Düzenle</th><th>Sil</th>
+        <th>ISBN</th><th>Başlık</th><th>Sayfa</th><th>Yıl</th><th>Kategori</th><th>Raf</th><th>Dolap</th><th>Mevcut</th><th>Düzenle</th><th>Listeden Kaldır</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -73,7 +73,7 @@ form label { display:inline-block; width:120px; }
   <table id="memberTable">
     <thead>
       <tr>
-        <th>Ad</th><th>Soyad</th><th>Okul No</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Düzenle</th><th>Sil</th>
+        <th>Ad</th><th>Soyad</th><th>Okul No</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Düzenle</th><th>Listeden Kaldır</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -98,7 +98,7 @@ form label { display:inline-block; width:120px; }
   <table id="txTable">
     <thead>
       <tr>
-        <th>Üye</th><th>Kitap</th><th>Veriliş</th><th>İade</th><th>Alındı</th><th>Düzenle</th><th>Sil</th>
+        <th>Üye</th><th>Kitap</th><th>Veriliş</th><th>İade</th><th>Alındı</th><th>Düzenle</th><th>Listeden Kaldır</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -120,7 +120,7 @@ async function loadBooks(){
   tbody.innerHTML='';
   data.forEach(b=>{
     const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${b.isbn}</td><td>${b.title}</td><td>${b.pages||''}</td><td>${b.year||''}</td><td>${b.category||''}</td><td>${b.shelf||''}</td><td>${b.cabinet||''}</td><td>${b.stock||''}</td><td><button onclick="editBook(${b.id})">Düzenle</button></td><td><button onclick="delBook(${b.id})">Sil</button></td>`;
+    tr.innerHTML=`<td>${b.isbn}</td><td>${b.title}</td><td>${b.pages||''}</td><td>${b.year||''}</td><td>${b.category||''}</td><td>${b.shelf||''}</td><td>${b.cabinet||''}</td><td>${b.stock||''}</td><td><button onclick="editBook(${b.id})">Düzenle</button></td><td><button onclick="delBook(${b.id})">Listeden Kaldır</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -186,7 +186,7 @@ async function loadMembers(){
   tbody.innerHTML='';
   data.forEach(m=>{
     const tr = document.createElement('tr');
-    tr.innerHTML=`<td>${m.name}</td><td>${m.surname}</td><td>${m.schoolNo||''}</td><td>${m.email||''}</td><td>${m.phone||''}</td><td>${m.role||''}</td><td><button onclick="editMember(${m.id})">Düzenle</button></td><td><button onclick="delMember(${m.id})">Sil</button></td>`;
+    tr.innerHTML=`<td>${m.name}</td><td>${m.surname}</td><td>${m.schoolNo||''}</td><td>${m.email||''}</td><td>${m.phone||''}</td><td>${m.role||''}</td><td><button onclick="editMember(${m.id})">Düzenle</button></td><td><button onclick="delMember(${m.id})">Listeden Kaldır</button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -259,7 +259,7 @@ async function loadTx(){
   data.forEach(t=>{
     const tr=document.createElement('tr');
     const returned = t.returned ? 'Evet' : `<button onclick="returnTx(${t.id})">Teslim Al</button>`;
-    tr.innerHTML=`<td>${t.member}</td><td>${t.book}</td><td>${t.issueDate||''}</td><td>${t.returnDate||''}</td><td>${returned}</td><td><button onclick="editTx(${t.id})">Düzenle</button></td><td><button onclick="delTx(${t.id})">Sil</button></td>`;
+    tr.innerHTML=`<td>${t.member}</td><td>${t.book}</td><td>${t.issueDate||''}</td><td>${t.returnDate||''}</td><td>${returned}</td><td><button onclick="editTx(${t.id})">Düzenle</button></td><td><button onclick="delTx(${t.id})">Listeden Kaldır</button></td>`;
     tbody.appendChild(tr);
   });
 }
