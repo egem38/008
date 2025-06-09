@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Kütüphane Otomasyonu</title>
+<style>
+body { font-family: Arial, sans-serif; }
+nav button { margin-right: 5px; }
+section { display: none; margin-top: 20px; }
+section.active { display: block; }
+table { border-collapse: collapse; width: 100%; }
+table, th, td { border: 1px solid #ccc; padding: 4px; }
+</style>
+</head>
+<body>
+<h1>Kütüphane Otomasyonu</h1>
+<nav>
+  <button onclick="show('books')">Kitaplar</button>
+  <button onclick="show('members')">Üyeler</button>
+  <button onclick="show('transactions')">İşlemler</button>
+</nav>
+
+<section id="books">
+  <h2>Kitaplar</h2>
+  <button onclick="fetchBook()">ISBN'den Çek</button>
+  <input id="isbnSearch" placeholder="ISBN"/>
+  <button onclick="addBook()">Ekle</button>
+  <input type="file" id="bookFile" accept=".xlsx"/>
+  <button onclick="importBooks()">Excel İçe Aktar</button>
+  <table id="bookTable">
+    <thead>
+      <tr>
+        <th>ISBN</th><th>Başlık</th><th>Sayfa</th><th>Yıl</th><th>Kategori</th><th>Raf</th><th>Dolap</th><th>Mevcut</th><th>Sil</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section id="members">
+  <h2>Üyeler</h2>
+  <button onclick="addMember()">Ekle</button>
+  <input type="file" id="memberFile" accept=".xlsx"/>
+  <button onclick="importMembers()">Excel İçe Aktar</button>
+  <table id="memberTable">
+    <thead>
+      <tr>
+        <th>Ad</th><th>Soyad</th><th>Okul No</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Sil</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<section id="transactions">
+  <h2>İşlemler</h2>
+  <button onclick="addTransaction()">Ekle</button>
+  <input type="file" id="txFile" accept=".xlsx"/>
+  <button onclick="importTx()">Excel İçe Aktar</button>
+  <table id="txTable">
+    <thead>
+      <tr>
+        <th>Üye</th><th>Kitap</th><th>Veriliş</th><th>İade</th><th>Alındı</th><th>Sil</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<script>
+function show(id){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='books') loadBooks();
+  if(id==='members') loadMembers();
+  if(id==='transactions') loadTx();
+}
+async function loadBooks(){
+  const res = await fetch('/api/books');
+  const data = await res.json();
+  const tbody = document.querySelector('#bookTable tbody');
+  tbody.innerHTML='';
+  data.forEach(b=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML=`<td>${b.isbn}</td><td>${b.title}</td><td>${b.pages||''}</td><td>${b.year||''}</td><td>${b.category||''}</td><td>${b.shelf||''}</td><td>${b.cabinet||''}</td><td>${b.stock||''}</td><td><button onclick="delBook(${b.id})">Sil</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+async function addBook(){
+  const isbn = prompt('ISBN?');
+  const title = prompt('Başlık?');
+  const book = { isbn, title };
+  await fetch('/api/books',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(book)});
+  loadBooks();
+}
+async function delBook(id){
+  await fetch('/api/books/'+id,{method:'DELETE'});
+  loadBooks();
+}
+async function fetchBook(){
+  const isbn=document.getElementById('isbnSearch').value;
+  const res = await fetch('/api/fetchBook/'+isbn);
+  if(res.ok){
+    const info = await res.json();
+    alert(JSON.stringify(info,null,2));
+  } else alert('Bulunamadı');
+}
+async function loadMembers(){
+  const res = await fetch('/api/members');
+  const data = await res.json();
+  const tbody = document.querySelector('#memberTable tbody');
+  tbody.innerHTML='';
+  data.forEach(m=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML=`<td>${m.name}</td><td>${m.surname}</td><td>${m.schoolNo}</td><td>${m.email}</td><td>${m.phone}</td><td>${m.role}</td><td><button onclick="delMember(${m.id})">Sil</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+async function addMember(){
+  const name=prompt('Ad?');
+  const surname=prompt('Soyad?');
+  const member={name,surname};
+  await fetch('/api/members',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(member)});
+  loadMembers();
+}
+async function delMember(id){
+  await fetch('/api/members/'+id,{method:'DELETE'});
+  loadMembers();
+}
+
+async function importBooks(){
+  const file=document.getElementById('bookFile').files[0];
+  if(!file) return alert('Dosya seçin');
+  const form=new FormData();
+  form.append('file', file);
+  await fetch('/api/import/books',{method:'POST',body:form});
+  loadBooks();
+}
+
+async function importMembers(){
+  const file=document.getElementById('memberFile').files[0];
+  if(!file) return alert('Dosya seçin');
+  const form=new FormData();
+  form.append('file', file);
+  await fetch('/api/import/members',{method:'POST',body:form});
+  loadMembers();
+}
+
+async function importTx(){
+  const file=document.getElementById('txFile').files[0];
+  if(!file) return alert('Dosya seçin');
+  const form=new FormData();
+  form.append('file', file);
+  await fetch('/api/import/transactions',{method:'POST',body:form});
+  loadTx();
+}
+async function loadTx(){
+  const res = await fetch('/api/transactions');
+  const data = await res.json();
+  const tbody = document.querySelector('#txTable tbody');
+  tbody.innerHTML='';
+  data.forEach(t=>{
+    const tr=document.createElement('tr');
+    const returned = t.returned ? 'Evet' : `<button onclick="returnTx(${t.id})">Teslim Al</button>`;
+    tr.innerHTML=`<td>${t.member}</td><td>${t.book}</td><td>${t.issueDate}</td><td>${t.returnDate}</td><td>${returned}</td><td><button onclick="delTx(${t.id})">Sil</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+async function addTransaction(){
+  const member = prompt('Üye ID?');
+  const book = prompt('Kitap ID?');
+  const issueDate=prompt('Veriliş tarihi?');
+  const returnDate=prompt('Teslim tarihi?');
+  const tx={member,book,issueDate,returnDate};
+  await fetch('/api/transactions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(tx)});
+  loadTx();
+}
+async function delTx(id){
+  await fetch('/api/transactions/'+id,{method:'DELETE'});
+  loadTx();
+}
+
+async function returnTx(id){
+  await fetch('/api/transactions/'+id+'/return',{method:'POST'});
+  loadTx();
+}
+show('books');
+</script>
+</body>
+</html>
