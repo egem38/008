@@ -4,14 +4,47 @@
 <meta charset="UTF-8">
 <title>Kütüphane Otomasyonu</title>
 <style>
-body { font-family: Arial, sans-serif; margin:20px; }
-nav button { margin-right: 5px; padding:8px 12px; }
-section { display: none; margin-top: 20px; }
-section.active { display: block; }
-table { border-collapse: collapse; width: 100%; margin-top:10px; }
-th, td { border: 1px solid #ccc; padding: 6px; text-align:left; }
-form div { margin-bottom:8px; }
-form label { display:inline-block; width:120px; }
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #e6f0ff;
+  color: #03376e;
+}
+nav button {
+  margin-right: 5px;
+  padding: 8px 12px;
+  background-color: #007BFF;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+nav button:hover {
+  background-color: #0056b3;
+}
+section {
+  display: none;
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+section.active {
+  display: block;
+  opacity: 1;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 10px;
+}
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: left;
+}
+form div { margin-bottom: 8px; }
+form label { display: inline-block; width: 120px; }
 </style>
 </head>
 <body>
@@ -107,8 +140,15 @@ form label { display:inline-block; width:120px; }
 
 <script>
 function show(id){
-  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('section').forEach(s=>{
+    if(s.id===id){
+      s.style.display='block';
+      requestAnimationFrame(()=>s.classList.add('active'));
+    } else {
+      s.classList.remove('active');
+      s.style.display='none';
+    }
+  });
   if(id==='books') loadBooks();
   if(id==='members') loadMembers();
   if(id==='transactions') loadTx();
