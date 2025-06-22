@@ -102,5 +102,3 @@ def main(argv: list[str] | None = None) -> None:
         parser.print_help()
 
 
-if __name__ == "__main__":
-    main()

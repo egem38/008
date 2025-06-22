@@ -1,6 +1,8 @@
 # NotebookLM Benzeri Türkçe Uygulama
 
-Bu depoda, sohbet ve podcast oluşturma işlevlerini tek bir `main.py` betiğinde birleştirdik. Anthropic'in Claude modelleriyle sohbet edebilir veya Coqui TTS ile ses klonlamalı podcast oluşturabilirsiniz.
+Bu depoda, sohbet ve podcast oluşturma işlevlerini `app` klasöründe topladık.
+Anthropic'in Claude modelleriyle sohbet edebilir veya Coqui TTS ile ses
+klonlamalı podcast oluşturabilirsiniz.
 
 ## Kurulum
 1. Python 3.12 veya üzeri bir sürüm kullanın.
@@ -15,12 +17,12 @@ Bu depoda, sohbet ve podcast oluşturma işlevlerini tek bir `main.py` betiğind
 
 ### Sohbet
 ```bash
-python main.py chat
+python -m app chat
 ```
 `quit` yazarak çıkabilirsiniz.
 
 ### Podcast Oluşturma
 ```bash
-python main.py podcast "Podcast metni buraya" --reference kendi_ses.wav --output sonuc.wav
+python -m app podcast "Podcast metni buraya" --reference kendi_ses.wav --output sonuc.wav
 ```
 Varsayılan olarak `reference.wav` dosyası klonlanır ve `output.wav` oluşturulur. `--model` seçeneği ile farklı bir Coqui TTS modeli belirtebilirsiniz.
